@@ -13,7 +13,7 @@ no_load = np.load('no_load.npy')
 not_run = np.load('not_run.npy')
 test_order = []
 forget = list(no_load) + list(not_run)
-'''
+
 print('Downloading models...')
 for i in tqdm(range(len(model_names))):
     if model_names[i] in forget:
@@ -21,7 +21,7 @@ for i in tqdm(range(len(model_names))):
     model_list.append((pretrainedmodels.__dict__[model_names[i]](num_classes=1000, pretrained='imagenet'), 
                             model_names[i]))
     test_order.append(model_names[i])
-'''
+
 resnet18 = models.resnet18(pretrained=True)
 alexnet = models.alexnet(pretrained=True)
 squeezenet = models.squeezenet1_0(pretrained=True)
@@ -59,29 +59,9 @@ index_to_cat.sort()
 index_to_cat = torch.tensor([int(x) for x in index_to_cat])
 
 print('Testing models...')
-'''
-data = iter(testloader)
-for i in tqdm(range(len(testloader))):
-    images = images.to(device)
-    labels = labels.to(device)
-    for k in range(len(model_list)):
-        model = model_list[k][0]
-        model = model.to(device)
-        model.eval()
-
-        model = model.to('cpu')
-
-        torch.cude.empty_cache()
-    for k in range(len(torch_list)):
-        model = torch_list[k][0]
-        model = model.to(device)
-        model.eval()
-
-        model = model.to('cpu')
-'''
-#model_acc = np.zeros(len(model_list))
+model_acc = np.zeros(len(model_list))
 torch_acc = np.zeros(len(torch_list))
-'''
+
 print('Testing pretrainedmodels')
 for k in tqdm(range(len(model_list))):
     correct = 0
@@ -101,7 +81,7 @@ for k in tqdm(range(len(model_list))):
         model_acc[k] = correct/total
     torch.cuda.empty_cache()
 np.save('model_acc', model_acc)
-'''
+
 model_acc = np.load('model_acc.npy')
 print(model_acc)
 print('Test torch models')
