@@ -1,0 +1,6 @@
+#Irrelevant Directories#
+*.tar.gz
+imagenetv2-matched-frequency
+test
+val
+venv
