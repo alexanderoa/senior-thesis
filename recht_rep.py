@@ -9,19 +9,23 @@ import torchvision.models as models
 
 model_names = pretrainedmodels.model_names
 model_list = []
-no_load = np.load('no_load.npy')
+no_load = np.load('no_load.npy') #list of models from pretrainedmodels that don't load or run data properly
 not_run = np.load('not_run.npy')
 test_order = []
 forget = list(no_load) + list(not_run)
 
 print('Downloading models...')
-for i in tqdm(range(len(model_names))):
+for i in tqdm(range(len(model_names))): #retrieving models from pretrainemodels package
     if model_names[i] in forget:
         continue
     model_list.append((pretrainedmodels.__dict__[model_names[i]](num_classes=1000, pretrained='imagenet'), 
                             model_names[i]))
     test_order.append(model_names[i])
 
+'''
+loading pretrainemodels from torchvision
+there's overlap with the pretrainemodels package
+'''
 resnet18 = models.resnet18(pretrained=True)
 alexnet = models.alexnet(pretrained=True)
 squeezenet = models.squeezenet1_0(pretrained=True)
@@ -55,16 +59,21 @@ testv1 = torch.utils.data.DataLoader(imagenetv1, batch_size=4,
                                         shuffle=True, num_workers=1)
 testv2 = torch.utils.data.DataLoader(imagenetv2, batch_size=4,
                                         shuffle=True, num_workers=1)
-
-
+'''
+DataLoader loads the models in order by digit (e.g. 1, 10, 11, ...) rather than numerical order
+index_to_cat let's us convert the labels from DataLoader to the correct labels
+'''
 len_classes = 1000
 index_to_cat = [str(x) for x in range(len_classes)]
 index_to_cat.sort()
 index_to_cat = torch.tensor([int(x) for x in index_to_cat])
 
 def num_correct(output, target, topk=(1,)):
-    """Computes the precision@k for the specified values of k"""
-    #yanked from https://github.com/bearpaw/pytorch-classification/blob/cc9106d598ff1fe375cc030873ceacfea0499d77/utils/eval.py
+    '''
+    Computes the precision@k for the specified values of k
+    Yanked from github:
+    https://github.com/bearpaw/pytorch-classification/blob/cc9106d598ff1fe375cc030873ceacfea0499d77/utils/eval.py
+    '''
     maxk = max(topk)
     batch_size = target.size(0)
 
@@ -80,6 +89,12 @@ def num_correct(output, target, topk=(1,)):
     return res
 
 def run_models(models, testloader):
+    '''
+    Function to run a list of models on ImageNet or a transform of ImageNet
+    Calculates top-1 and top-5 accuracy
+    Loads models and images onto the GPU one-by-one to avoid memory issues
+    Empties GPU cache after testing each model
+    '''
     results = np.zeros((len(models),2))
     for k in tqdm(range(len(models))):
         correct = 0
@@ -102,7 +117,7 @@ def run_models(models, testloader):
 
 model_acc = np.zeros((2, len(model_list), 2))
 print('Running pretrained models on ImageNetV1...')
-model_acc[0] = run_models(model_list, testv1)
+model_acc[0] = run_models(model_list, testv1) #Right now there seems to be an issue with loading the images
 print('Running pretrained models on ImageNetV2...')
 model_acc[1] = run_models(model_list, testv2)
 np.save('model_acc', model_acc)
@@ -115,5 +130,3 @@ print('Running torch models on ImageNextV2...')
 
 torch_acc = run_models(torch_list, testv2)
 np.save('torch_acc', torch_acc)
-
-
