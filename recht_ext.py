@@ -65,6 +65,19 @@ def rotate_imgs(dataloc, rotation=(0,0)):
                                             shuffle=True, num_workers=1)
     return test_rot
 
+def add_noise(dataloc, noise=0, mean=0.45, std=0.224, mean_mtplr=1, std_mtplr=1):
+    noisy_transform = transforms.Compose([transforms.Resize(256),
+                                    transforms.CenterCrop(224),
+                                    transforms.ToTensor(), 
+                                    transforms.Lambda(lambda x : x + 
+                                        noise*torch.empty_like(x).normal_(mean=mean_mtplr*mean, 
+                                            std=std_mtplr*std)),
+                                    normalize])
+    img_noise = datasets.ImageFolder(root=dataloc, transform=noisy_transform)
+    test_noise = torch.utils.data.DataLoader(img_noise, batch_size=4,
+                                            shuffle=True, num_workers=1)
+    return test_noise
+
 imagenetv2 = datasets.ImageFolder(root='imagenetv2-matched-frequency', transform=transform)
 testv2 = torch.utils.data.DataLoader(imagenetv2, batch_size=4,
                       shuffle=True, num_workers=1)
@@ -73,6 +86,18 @@ rotate90 = rotate_imgs(v2_folder, (90,90))
 rotate180 = rotate_imgs(v2_folder, (180, 180))
 rotate45 = rotate_imgs(v2_folder, (45, 45))
 rotate_ran = rotate_imgs(v2_folder, (0, 360))
+
+noise10 = add_noise(v2_folder, noise=0.1)
+noise25 = add_noise(v2_folder, noise=0.25)
+noise50 = add_noise(v2_folder, noise=0.5)
+
+wide_noise10 = add_noise(v2_folder, noise=0.1, std_mtplr=2)
+wide_noise25 = add_noise(v2_folder, noise=0.25, std_mtplr=2)
+wide_noise50 = add_noise(v2_folder, noise=0.5, std_mtplr=2)
+
+nrw_noise10 = add_noise(v2_folder, noise=0.1, std_mtplr=0.5)
+nrw_noise25 = add_noise(v2_folder, noise=0.25, std_mtplr=0.5)
+nrw_noise50 = add_noise(v2_folder, noise=0.5, std_mtplr=0.5)
 
 '''
 DataLoader loads the models in order by digit (e.g. 1, 10, 11, ...) rather than numerical order
@@ -146,7 +171,6 @@ print('Testing models on upside down images...')
 rot180_acc[:len(model_list)] = run_models(model_list, rotate180)
 rot180_acc[len(model_list):] = run_models(torch_list, rotate180)
 np.save('results/rot180_acc', rot180_acc)
-'''
 
 rot90_acc = np.zeros((len(model_list)+len(torch_list), 2))
 print('Testing models on images rotated 90 deg...')
@@ -165,4 +189,59 @@ print('Testing models on images rotated randomly...')
 rotran_acc[:len(model_list)] = run_models(model_list, rotate_ran)
 rotran_acc[len(model_list):] = run_models(torch_list, rotate_ran)
 np.save('results/rotran_acc', rotran_acc)
+'''
+
+noise10_acc = np.zeros((len(model_list)+len(torch_list), 2))
+print('Testing models on images plus ten percent noise...')
+noise10_acc[:len(model_list)] = run_models(model_list, noise10)
+noise10_acc[len(model_list):] = run_models(torch_list, noise10)
+np.save('results/noise10_acc', noise10_acc)
+
+noise25_acc = np.zeros((len(model_list)+len(torch_list), 2))
+print('Testing models on images plus 25 percent noise...')
+noise25_acc[:len(model_list)] = run_models(model_list, noise25)
+noise25_acc[len(model_list):] = run_models(torch_list, noise25)
+np.save('results/noise25_acc', noise25_acc)
+
+noise50_acc = np.zeros((len(model_list)+len(torch_list), 2))
+print('Testing models on images plus 50 percent noise...')
+noise50_acc[:len(model_list)] = run_models(model_list, noise50)
+noise50_acc[len(model_list):] = run_models(torch_list, noise50)
+np.save('results/noise50_acc', noise50_acc)
+
+wide_noise10_acc = np.zeros((len(model_list)+len(torch_list), 2))
+print('Testing models on images plus 10% wide noise...')
+wide_noise10_acc[:len(model_list)] = run_models(model_list, wide_noise10)
+wide_noise10_acc[len(model_list):] = run_models(torch_list, wide_noise10)
+np.save('results/wide_noise10_acc', wide_noise10_acc)
+
+wide_noise25_acc = np.zeros((len(model_list)+len(torch_list), 2))
+print('Testing models on images plus 25% wide noise...')
+wide_noise25_acc[:len(model_list)] = run_models(model_list, wide_noise25)
+wide_noise25_acc[len(model_list):] = run_models(torch_list, wide_noise25)
+np.save('results/wide_noise25_acc', wide_noise25_acc)
+
+wide_noise50_acc = np.zeros((len(model_list)+len(torch_list), 2))
+print('Testing models on images plus 50% wide noise...')
+wide_noise50_acc[:len(model_list)] = run_models(model_list, wide_noise50)
+wide_noise50_acc[len(model_list):] = run_models(torch_list, wide_noise50)
+np.save('results/wide_noise50_acc', wide_noise50_acc)
+
+nrw_noise10_acc = np.zeros((len(model_list)+len(torch_list), 2))
+print('Testing models on images plus 10% narrow noise...')
+nrw_noise10_acc[:len(model_list)] = run_models(model_list, nrw_noise10)
+nrw_noise10_acc[len(model_list):] = run_models(torch_list, nrw_noise10)
+np.save('results/nrw_noise10_acc', nrw_noise10_acc)
+
+nrw_noise25_acc = np.zeros((len(model_list)+len(torch_list), 2))
+print('Testing models on images plus 25% narrow noise...')
+nrw_noise25_acc[:len(model_list)] = run_models(model_list, nrw_noise25)
+nrw_noise25_acc[len(model_list):] = run_models(torch_list, nrw_noise25)
+np.save('results/nrw_noise25_acc', nrw_noise25_acc)
+
+nrw_noise50_acc = np.zeros((len(model_list)+len(torch_list), 2))
+print('Testing models on images plus 50% narrow noise...')
+nrw_noise50_acc[:len(model_list)] = run_models(model_list, nrw_noise50)
+nrw_noise50_acc[len(model_list):] = run_models(torch_list, nrw_noise50)
+np.save('results/nrw_noise50_acc', nrw_noise50_acc)
 
