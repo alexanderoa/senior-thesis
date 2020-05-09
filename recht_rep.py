@@ -13,7 +13,7 @@ no_load = np.load('no_load.npy') #list of models from pretrainedmodels that don'
 not_run = np.load('not_run.npy')
 test_order = []
 forget = list(no_load) + list(not_run)
-
+'''
 print('Downloading models...')
 for i in tqdm(range(len(model_names))): #retrieving models from pretrainemodels package
     if model_names[i] in forget:
@@ -22,10 +22,9 @@ for i in tqdm(range(len(model_names))): #retrieving models from pretrainemodels 
                             model_names[i]))
     test_order.append(model_names[i])
 
-'''
-loading pretrainemodels from torchvision
-there's overlap with the pretrainemodels package
-'''
+#loading pretrainemodels from torchvision
+#there's overlap with the pretrainemodels package
+
 resnet18 = models.resnet18(pretrained=True)
 alexnet = models.alexnet(pretrained=True)
 squeezenet = models.squeezenet1_0(pretrained=True)
@@ -44,6 +43,56 @@ torch_names = ['resnet18', 'alexnet', 'squeezenet', 'vgg16', 'densenet', 'google
 for i in range(len(torch_list)):
     torch_list[i] = (torch_list[i], torch_names[i])
     test_order.append(torch_names[i])
+'''
+alexnet = models.alexnet(pretrained=True)
+vgg11 = models.vgg11(pretrained=True)
+vgg11_bn = models.vgg11_bn(pretrained=True)
+vgg13 = models.vgg13(pretrained=True)
+vgg13_bn = models.vgg13_bn(pretrained=True)
+vgg16 = models.vgg16(pretrained=True)
+vgg16_bn = models.vgg16_bn(pretrained=True)
+vgg19 = models.vgg19(pretrained=True)
+vgg19_bn = models.vgg19_bn(pretrained=True)
+resnet18 = models.resnet18(pretrained=True)
+resnet34 = models.resnet34(pretrained=True)
+resnet50 = models.resnet50(pretrained=True)
+resnet101 = models.resnet101(pretrained=True)
+resnet152 = models.resnet152(pretrained=True)
+squeezenet1_0 = models.squeezenet1_0(pretrained=True)
+squeezenet1_1 = models.squeezenet1_1(pretrained=True)
+densenet121 = models.densenet121(pretrained=True)
+densenet169 = models.densenet169(pretrained=True)
+densenet161 = models.densenet161(pretrained=True)
+densenet201 = models.densenet201(pretrained=True)
+googlenet = models.googlenet(pretrained=True)
+shufflenetv2_x0_5 = models.shufflenet_v2_x0_5(pretrained=True)
+shufflenetv2_x1_0 = models.shufflenet_v2_x1_0(pretrained=True)
+#shufflenetv2_x1_5 = models.shufflenet_v2_x1_5(pretrained=True) NotImprlementedError
+#shufflenetv2_x2_0 = models.shufflenet_v2_x2_0(pretrained=True) NotImplrmenetedError
+mobilenet_v2 = models.mobilenet_v2(pretrained=True)
+resnext50_32x4d = models.resnext50_32x4d(pretrained=True)
+resnext101_32x8d = models.resnext101_32x8d(pretrained=True)
+wide_resnet50_2 = models.wide_resnet50_2(pretrained=True)
+wide_resnet101_2 = models.wide_resnet101_2(pretrained=True)
+mnasnet0_5 = models.mnasnet0_5(pretrained=True)
+#mnasnet0_75 = models.mnasnet0_75(pretrained=True) No checkpoint available 
+mnasnet1_0 = models.mnasnet1_0(pretrained=True)
+#mnasnet1_3 = models.mnasnet1_3(pretrained=True) No cehckpoint available
+
+torch_list_ext = [alexnet, vgg11, vgg11_bn, vgg13, vgg13_bn, vgg16, vgg16_bn, 
+        vgg19, vgg19_bn, resnet18, resnet34, resnet50, resnet101, resnet152, 
+        squeezenet1_0, squeezenet1_1, densenet121, densenet169, densenet161,
+        densenet201, googlenet, shufflenetv2_x0_5, shufflenetv2_x1_0, 
+        mobilenet_v2, resnext50_32x4d, resnext101_32x8d, wide_resnet50_2,
+        wide_resnet101_2, mnasnet0_5, mnasnet1_0]
+torch_names_ext = ['alexnet', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn', 
+        'vgg19', 'vgg19_bn', 'resnet18','resnet34', 'resnet50', 'resnet101', 'resnet152', 
+        'squeezenet1_0', 'squeezenet1_1', 'densenet121', 'densenet169', 'densenet161',
+        'densenet201', 'googlenet', 'sufflenetv2_x0_5', 'shufflenetv2_x1_0', 
+        'mobilenet_v2','resnext50_32x4d', 'resnext101_32x8d', 'wide_resnet50_2',
+        'wide_resnet101_2', 'mnasnet0_5', 'mnasnet1_0']
+for i in range(len(torch_list_ext)):
+    torch_list_ext[i] = (torch_list_ext[i], torch_names_ext[i])
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -54,7 +103,7 @@ transform = transforms.Compose([transforms.Resize(256),
                                 transforms.ToTensor(), 
                                 normalize])
 imagenetv2 = datasets.ImageFolder(root='imagenetv2-matched-frequency', transform=transform)
-imagenetv1 = datasets.ImageFolder(root='/home/asemota_alexander/data/val_2010', transform=transform) #using val for now, for efficiency
+imagenetv1 = datasets.ImageFolder(root='/home/asemota_alexander/data/val_2012', transform=transform) #using val for now, for efficiency
 testv1 = torch.utils.data.DataLoader(imagenetv1, batch_size=4,
                                         shuffle=True, num_workers=1)
 testv2 = torch.utils.data.DataLoader(imagenetv2, batch_size=4,
@@ -88,7 +137,7 @@ def num_correct(output, target, topk=(1,)):
         res.append(correct_k)
     return res
 
-def run_models(models, testloader):
+def run_models(models, testloader, v1=True):
     '''
     Function to run a list of models on ImageNet or a transform of ImageNet
     Calculates top-1 and top-5 accuracy
@@ -105,6 +154,8 @@ def run_models(models, testloader):
         testdata = iter(testloader)
         for j in range(len(testdata)):
             images, labels = testdata.next()
+            if v1:
+                labels -= 1 #ImagenetV1-2012 has labels 1-1000 instead of 0-999, so subtract 1
             images = images.to(device)
             outputs = model(images)
             right_labels = index_to_cat[labels]
@@ -114,7 +165,7 @@ def run_models(models, testloader):
             results[k][1] = correct[1]/total #top-5 accuracy
         torch.cuda.empty_cache()
     return results
-
+'''
 model_acc = np.zeros((2, len(model_list), 2))
 print('Running pretrained models on ImageNetV1...')
 model_acc[0] = run_models(model_list, testv1) #Right now there seems to be an issue with loading the images
@@ -127,6 +178,17 @@ print('Running torch models on ImageNetV1...')
 torch_acc = run_models(torch_list, testv1)
 
 print('Running torch models on ImageNextV2...')
-
 torch_acc = run_models(torch_list, testv2)
-np.save('torch_acc', torch_acc)
+
+
+torch_ext_v2 = np.zeros((len(torch_list_ext), 2))
+print('Running torch models on ImaeNtV2...')
+torch_ext_v2 = run_models(torch_list_ext, testv2)
+np.save('torch_ext_v2', torch_ext_v2)
+'''
+
+torch_ext_v1 = np.zeros((len(torch_list_ext), 2))
+print('Running torch models on ImageNetV1...')
+
+torch_ext_v1 = run_models(torch_list_ext, testv1)
+np.save('torch_ext_v1', torch_ext_v1)

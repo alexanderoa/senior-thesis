@@ -189,7 +189,6 @@ print('Testing models on images rotated randomly...')
 rotran_acc[:len(model_list)] = run_models(model_list, rotate_ran)
 rotran_acc[len(model_list):] = run_models(torch_list, rotate_ran)
 np.save('results/rotran_acc', rotran_acc)
-'''
 
 noise10_acc = np.zeros((len(model_list)+len(torch_list), 2))
 print('Testing models on images plus ten percent noise...')
@@ -220,6 +219,7 @@ print('Testing models on images plus 25% wide noise...')
 wide_noise25_acc[:len(model_list)] = run_models(model_list, wide_noise25)
 wide_noise25_acc[len(model_list):] = run_models(torch_list, wide_noise25)
 np.save('results/wide_noise25_acc', wide_noise25_acc)
+'''
 
 wide_noise50_acc = np.zeros((len(model_list)+len(torch_list), 2))
 print('Testing models on images plus 50% wide noise...')
